@@ -26,8 +26,8 @@ ecosystem (programming language) type of vulnerability.
   * To properly read all repos a Github token with _security_events_ scope to
 read private repositories is required.
 * [JQ](https://stedolan.github.io/jq/download/)
-* Python 3 - This was developed and tested with Python 3.10.  Likely to work with
-all versions of Python 3.
+* Python 3 - This was developed and tested with Python 3.10.  Likely to work 
+with Python 3.6 and above.  (f-strings used in print statements)
 
 
 ## Quick Start
@@ -47,14 +47,14 @@ review is needed.  This data can also be viewed via Github, assuming
 appropriate permissions are granted.
 
 
-## NOTES
+## Notes
 
 1. Technically jq is unceessary for either the bash or the python script.
 Jq is used to provide convenient human readable review of the json files, if 
 needed.  (Otherwise all the json returns (files) are in a single line.)
 
 
-## TODO
+## ToDo
 
 1. Remove dependency on gh cli command and almalgamate both scripts to
 a single Python script.
