@@ -47,6 +47,13 @@ review is needed.  This data can also be viewed via Github, assuming
 appropriate permissions are granted.
 
 
+## NOTES
+
+1. Technically jq is unceessary for either the bash or the python script.
+Jq is used to provide convenient human readable review of the json files, if 
+needed.  (Otherwise all the json returns (files) are in a single line.)
+
+
 ## TODO
 
 1. Remove dependency on gh cli command and almalgamate both scripts to
