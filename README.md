@@ -34,7 +34,7 @@ with Python 3.6 and above.  (f-strings used in print statements)
 
 [Login](https://cli.github.com/manual/gh_auth_login) to Github via gh cli
 
-1. ```git auth login```
+1. ```gh auth login```
 
 2. ```./get_all_dependabot.sh <name of organization>```\
   Eg: ```./get_all_dependabot.sh procurify```
@@ -64,6 +64,13 @@ Slack)
    paramaeters.
 3. Optimize code (reduce some repetitive code).
 4. Generate graphics with Plotly or alternative graphing module with Python.(?)
+
+
+## References
+
+[Github CLI login](https://cli.github.com/manual/gh_auth_login)
+[List oranization repos](https://docs.github.com/en/rest/repos/repos#list-organization-repositories)
+[List dependabot alerts](https://docs.github.com/en/rest/dependabot/alerts#list-dependabot-alerts-for-a-repository)
 
 
 ## License
