@@ -57,11 +57,13 @@ needed.  (Otherwise all the json returns (files) are in a single line.)
 ## ToDo
 
 1. Remove dependency on gh cli command and almalgamate both scripts to
-a single Python script.
+a single Python script.  (potentially have this run on as an AWS Lambda and
+executed via scheduled EventBridge event and forward to a platform such as
+Slack)
 2. Provide method to name input / output file and folder names via command line
    paramaeters.
 3. Optimize code (reduce some repetitive code).
-4. Generate graphics with Plotly or alternative graphing module with Python.
+4. Generate graphics with Plotly or alternative graphing module with Python.(?)
 
 
 ## License
