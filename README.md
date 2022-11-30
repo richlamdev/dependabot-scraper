@@ -68,9 +68,9 @@ Slack)
 
 ## References
 
-[Github CLI login](https://cli.github.com/manual/gh_auth_login)
-[List oranization repos](https://docs.github.com/en/rest/repos/repos#list-organization-repositories)
-[List dependabot alerts](https://docs.github.com/en/rest/dependabot/alerts#list-dependabot-alerts-for-a-repository)
+[Github CLI login](https://cli.github.com/manual/gh_auth_login)\
+[List oranization repos](https://docs.github.com/en/rest/repos/repos#list-organization-repositories)\
+[List dependabot alerts](https://docs.github.com/en/rest/dependabot/alerts#list-dependabot-alerts-for-a-repository)\
 
 
 ## License
