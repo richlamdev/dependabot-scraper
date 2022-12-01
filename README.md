@@ -70,8 +70,9 @@ Slack)
 
 [Github CLI login](https://cli.github.com/manual/gh_auth_login)\
 [List oranization repos](https://docs.github.com/en/rest/repos/repos#list-organization-repositories)\
-[List dependabot alerts](https://docs.github.com/en/rest/dependabot/alerts#list-dependabot-alerts-for-a-repository)
-
+[List dependabot alerts](https://docs.github.com/en/rest/dependabot/alerts#list-dependabot-alerts-for-a-repository)\
+[Working with Dependabot](https://docs.github.com/en/code-security/dependabot/working-with-dependabot)\
+[Github Dependabot Blog](https://github.blog/2020-06-01-keep-all-your-packages-up-to-date-with-dependabot/)
 
 ## License
 
