@@ -209,13 +209,19 @@ def get_files(dir):
 
     input_list = Path(dir).iterdir()
 
+    # this is the wrong way to determine repo status! Todo:
+    # 1. Detect repos with alerts via empty item return
+    # 2. Determine disabled dependabot repo via presence of message key
+
     for item in input_list:
         if item.is_file():
-            # remove files (repos) less than 5 bytes; likely repos without dependabot alerts
+            # remove files (repos) less than 5 bytes; likely repos without
+            # dependabot alerts
             if item.stat().st_size < 5:
                 repos_no_alerts.append(item)
                 continue
-            # remove files (repos) less than 500 bytes; likely repos with dependabot disabled
+            # remove files (repos) less than 500 bytes; likely repos with
+            # dependabot disabled
             if item.stat().st_size < 500 and item.stat().st_size > 6:
                 repos_dependabot_disabled.append(item)
                 continue
