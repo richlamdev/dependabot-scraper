@@ -245,7 +245,8 @@ def validate_json(json_list):
                 invalid_json_files.append(json_file)
 
     # find and replace where paginate occurred during http requests
-    # this regex is only valid because jq was used to reformat the returned json
+    # this regex is only valid because jq was used to reformat the returned
+    # json; this is not an ideal process!
     for json_file in invalid_json_files:
         with open(json_file) as file:
             json_read = file.read()
@@ -258,9 +259,21 @@ def validate_json(json_list):
     return valid_json_files, invalid_json_files
 
 
-def get_org_data(all_data):
+def get_org_data(
+    repos_no_vulns, repos_with_vulns, repos_disabled, parsed_data
+):
+
+    num_no_vulns = len(repos_no_vulns)
+    num_with_vulns = len(repos_with_vulns)
+    num_disabled = len(repos_disabled)
+
+    total_repos = num_no_vulns + num_with_vulns + num_disabled
 
     org_data = {
+        "Total Number of Repos": total_repos,
+        "Repos with alerts": num_with_vulns,
+        "Repos without alerts": num_no_vulns,
+        "Repos disabled alerts": num_disabled,
         "open critical": 0,
         "open high": 0,
         "open medium": 0,
@@ -275,119 +288,98 @@ def get_org_data(all_data):
         "open unknown": 0,
     }
 
-    for data in range(len(all_data)):
-        org_data["open critical"] += all_data[data]["open_crit"]
-        org_data["open high"] += all_data[data]["open_high"]
-        org_data["open medium"] += all_data[data]["open_med"]
-        org_data["open low"] += all_data[data]["open_low"]
-        org_data["open npm"] += all_data[data]["open_npm"]
-        org_data["open pip"] += all_data[data]["open_pip"]
-        org_data["open rubygems"] += all_data[data]["open_rubygems"]
-        org_data["open nuget"] += all_data[data]["open_nuget"]
-        org_data["open maven"] += all_data[data]["open_maven"]
-        org_data["open composer"] += all_data[data]["open_composer"]
-        org_data["open rust"] += all_data[data]["open_rust"]
-        org_data["open unknown"] += all_data[data]["open_unknown"]
+    for data in range(len(parsed_data)):
+        org_data["open critical"] += parsed_data[data]["open_crit"]
+        org_data["open high"] += parsed_data[data]["open_high"]
+        org_data["open medium"] += parsed_data[data]["open_med"]
+        org_data["open low"] += parsed_data[data]["open_low"]
+        org_data["open npm"] += parsed_data[data]["open_npm"]
+        org_data["open pip"] += parsed_data[data]["open_pip"]
+        org_data["open rubygems"] += parsed_data[data]["open_rubygems"]
+        org_data["open nuget"] += parsed_data[data]["open_nuget"]
+        org_data["open maven"] += parsed_data[data]["open_maven"]
+        org_data["open composer"] += parsed_data[data]["open_composer"]
+        org_data["open rust"] += parsed_data[data]["open_rust"]
+        org_data["open unknown"] += parsed_data[data]["open_unknown"]
 
     return org_data
 
 
+def write_csv_data(sorted_data):
+
+    repo_header = sorted_data[0].keys()
+    parsed_data_csv = "parsed_data.csv"
+
+    with open(parsed_data_csv, "w") as parsed_data_file:
+        writer = csv.DictWriter(parsed_data_file, fieldnames=repo_header)
+        writer.writeheader()
+        writer.writerows(sorted_data)
+
+    print()
+    print(f"CSV of all dependabot repos written to {parsed_data_csv}")
+
+
+def write_txt_data(sorted_data):
+
+    parsed_data_txt = "parsed_data.txt"
+
+    with open(parsed_data_txt, "w") as parsed_data_file:
+        pp = pprint.PrettyPrinter(
+            depth=4, sort_dicts=False, stream=parsed_data_file
+        )
+        pp.pprint(sorted_data)
+
+    print()
+    print(f"Text file of all dependabot repos written to {parsed_data_txt}")
+
+
+def write_org_data(org_data):
+
+    all_repo_header = org_data.keys()
+    org_data_csv = "org_data.csv"
+    with open(org_data_csv, "w") as org_data_file:
+        writer = csv.DictWriter(org_data_file, fieldnames=all_repo_header)
+        writer.writeheader()
+        writer.writerow(org_data)
+    print()
+    print(f"CSV of all organization data written to {org_data_csv}")
+    print()
+
+
 def main():
 
-    all_data = []
+    parsed_data = []
 
     input_files, files_no_alerts, files_dependabot_disabled = get_files(
         "./output"
     )
-
+    # valid_files and invalid_files vars not used, but potentially needed
+    # to track paginated requests from repos with a lot of json data
     valid_files, invalid_files = validate_json(input_files)
 
     for input_file in input_files:
-
         with open(input_file, "r") as f:
             dependa_dict = json.load(f)
 
         # create object for every repo
         input_file = Repo(input_file.stem, dependa_dict)
-
-        all_data.append(vars(input_file))
+        parsed_data.append(vars(input_file))
 
     # sort the data by priority number (sum of high and critical vulns)
-    sorted_data = sorted(all_data, key=lambda d: d["priority"], reverse=True)
-
-    repo_header = all_data[0].keys()
-
-    all_data_csv = "all_data.csv"
-
-    with open(all_data_csv, "w") as all_data_file:
-        writer = csv.DictWriter(all_data_file, fieldnames=repo_header)
-        writer.writeheader()
-        writer.writerows(sorted_data)
-
-    print(f"CSV of all dependabot repos written to {all_data_csv}")
-
-    all_data_txt = "all_data.txt"
-
-    with open(all_data_txt, "w") as all_data_file:
-        pp = pprint.PrettyPrinter(
-            depth=4, sort_dicts=False, stream=all_data_file
-        )
-        pp.pprint(sorted_data)
-
-    print(f"Text file of all dependabot repos written to {all_data_txt}")
-
-    ####################################
-    # gather repo stats across the org #
-    ####################################
-
-    total_repos = (
-        len(input_files)
-        + len(files_no_alerts)
-        + len(files_dependabot_disabled)
+    sorted_data = sorted(
+        parsed_data, key=lambda d: d["priority"], reverse=True
     )
 
-    print()
-    print(f"Total number of repos: {str(total_repos)}")
+    write_csv_data(sorted_data)
+    write_txt_data(sorted_data)
 
-    # print(f"Repos with dependabot alerts:\n {input_files}")
-    print(f"Number of repos with dependabot alerts: {str(len(input_files))}")
-
-    # print(f"Repos without dependabot alerts:\n {files_no_alerts}")
-    print(f"Number of repos without alerts: {str(len(files_no_alerts))}")
-
-    #    print(
-    #        f"Repos with dependabot alerts disabled:\n {files_dependabot_disabled}"
-    #    )
-    print(
-        f"Number of repos with dependabot alerts disabled: {str(len(files_dependabot_disabled))}"
+    org_data = get_org_data(
+        files_no_alerts, input_files, files_dependabot_disabled, parsed_data
     )
 
-    repo_stats = {
-        "total repos": total_repos,
-        "repos with alerts": len(input_files),
-        "repos without alert": len(files_no_alerts),
-        "repos disabled": len(files_dependabot_disabled),
-    }
-
+    write_org_data(org_data)
     print()
-    org_data = get_org_data(all_data)
-
-    repo_stats.update(org_data)
-
-    print(repo_stats)
-
-    all_repo_header = repo_stats.keys()
-
-    org_data_csv = "org_data.csv"
-
-    with open(org_data_csv, "w") as org_data_file:
-        writer = csv.DictWriter(org_data_file, fieldnames=all_repo_header)
-        writer.writeheader()
-        writer.writerow(repo_stats)
-
-    print()
-    print(f"CSV of all organization data written to {org_data_csv}")
-    print()
+    print(org_data)
 
 
 if __name__ == "__main__":
