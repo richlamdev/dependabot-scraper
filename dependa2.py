@@ -41,33 +41,6 @@ class Repo:
         self.open_dismissed = open_dismissed["low"]
         self.last_dismissed_at = open_dismissed["date"]
 
-        #        (
-        #            self.total_open,
-        #            self.published_at,
-        #            self.open_crit,
-        #            self.open_high,
-        #            self.open_med,
-        #            self.open_low,
-        #        ) = self.get_state_data("open", repo_dict)
-        #
-        #        (
-        #            self.total_fixed,
-        #            self.fixed_at,
-        #            self.fixed_crit,
-        #            self.fixed_high,
-        #            self.fixed_med,
-        #            self.fixed_low,
-        #        ) = self.get_state_data("fixed", repo_dict)
-        #
-        #        (
-        #            self.total_dismissed,
-        #            self.dismissed_at,
-        #            self.dismissed_crit,
-        #            self.dismissed_high,
-        #            self.dismissed_med,
-        #            self.dismissed_low,
-        #        ) = self.get_state_data("dismissed", repo_dict)
-
         (
             self.open_npm,
             self.open_pip,
@@ -138,7 +111,6 @@ class Repo:
         }
 
         for item in repo_dict:
-
             if item["state"] == state:
                 if state == "open":
                     get_eco_dict = self.get_language(item, get_eco_dict)
@@ -157,6 +129,19 @@ class Repo:
             get_eco_dict["rust"],
             get_eco_dict["unknown"],
         )
+
+    def get_severity_data(self, item_dict, sev_dict):
+
+        if item_dict["security_advisory"]["severity"] == "critical":
+            sev_dict["crit"] += 1
+        elif item_dict["security_advisory"]["severity"] == "high":
+            sev_dict["high"] += 1
+        elif item_dict["security_advisory"]["severity"] == "medium":
+            sev_dict["med"] += 1
+        elif item_dict["security_advisory"]["severity"] == "low":
+            sev_dict["low"] += 1
+
+        return sev_dict
 
     def get_state_data(self, repo_dict):
 
@@ -191,20 +176,9 @@ class Repo:
         date_list_dismissed = []
 
         for item in repo_dict:
-            # if item["state"] == state:
-            # total += 1
-            # total = len(item["state"])
-
             if item["state"] == "open":
                 state_open["total"] += 1
-                if item["security_advisory"]["severity"] == "critical":
-                    state_open["crit"] += 1
-                elif item["security_advisory"]["severity"] == "high":
-                    state_open["high"] += 1
-                elif item["security_advisory"]["severity"] == "medium":
-                    state_open["med"] += 1
-                else:
-                    state_open["low"] += 1
+                state_open = self.get_severity_data(item, state_open)
 
                 temp_pub_at_date = item["security_advisory"]["published_at"]
                 date_list_open.append(
@@ -214,14 +188,7 @@ class Repo:
 
             elif item["state"] == "fixed":
                 state_fixed["total"] += 1
-                if item["security_advisory"]["severity"] == "critical":
-                    state_fixed["crit"] += 1
-                elif item["security_advisory"]["severity"] == "high":
-                    state_fixed["high"] += 1
-                elif item["security_advisory"]["severity"] == "medium":
-                    state_fixed["med"] += 1
-                else:
-                    state_fixed["low"] += 1
+                # state_fixed = self.get_severity_data(item, state_fixed)
 
                 temp_fixed_at_date = item["fixed_at"]
                 date_list_fixed.append(
@@ -231,14 +198,8 @@ class Repo:
 
             elif item["state"] == "dismissed":
                 state_dismissed["total"] += 1
-                if item["security_advisory"]["severity"] == "critical":
-                    state_dismissed["crit"] += 1
-                elif item["security_advisory"]["severity"] == "high":
-                    state_dismissed["high"] += 1
-                elif item["security_advisory"]["severity"] == "medium":
-                    state_dismissed["med"] += 1
-                else:
-                    state_dismissed["low"] += 1
+                # state_dismissed = self.get_severity_data(item, state_dismissed)
+
                 temp_dismissed_at_date = item["dismissed_at"]
                 date_list_dismissed.append(
                     datetime.strptime(
