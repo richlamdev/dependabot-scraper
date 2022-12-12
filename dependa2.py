@@ -18,7 +18,9 @@ class Repo:
     def __init__(self, name, repo_dict):
 
         self.name = name
-        open_state, open_fixed, open_dismissed = self.get_state_data(repo_dict)
+        open_state, fixed_state, dismissed_state = self.get_state_data(
+            repo_dict
+        )
 
         self.total_open = open_state["total"]
         self.open_crit = open_state["crit"]
@@ -27,110 +29,52 @@ class Repo:
         self.open_low = open_state["low"]
         self.first_published_at = open_state["date"]
 
-        self.total_fixed = open_fixed["total"]
-        self.open_fixed = open_fixed["crit"]
-        self.open_fixed = open_fixed["high"]
-        self.open_fixed = open_fixed["med"]
-        self.open_fixed = open_fixed["low"]
-        self.last_fixed_at = open_fixed["date"]
+        self.total_fixed = fixed_state["total"]
+        self.fixed_crit = fixed_state["crit"]
+        self.fixed_high = fixed_state["high"]
+        self.fixed_med = fixed_state["med"]
+        self.fixed_low = fixed_state["low"]
+        self.last_fixed_at = fixed_state["date"]
 
-        self.total_dismissed = open_dismissed["total"]
-        self.open_dismissed = open_dismissed["crit"]
-        self.open_dismissed = open_dismissed["high"]
-        self.open_dismissed = open_dismissed["med"]
-        self.open_dismissed = open_dismissed["low"]
-        self.last_dismissed_at = open_dismissed["date"]
+        self.total_dismissed = dismissed_state["total"]
+        self.dismissed_crit = dismissed_state["crit"]
+        self.dismissed_high = dismissed_state["high"]
+        self.dismissed_med = dismissed_state["med"]
+        self.dismissed_low = dismissed_state["low"]
+        self.last_dismissed_at = dismissed_state["date"]
 
-        (
-            self.open_npm,
-            self.open_pip,
-            self.open_rubygems,
-            self.open_nuget,
-            self.open_maven,
-            self.open_composer,
-            self.open_rust,
-            self.open_unknown,
-        ) = self.get_eco_data("open", repo_dict)
+        self.open_npm = open_state["npm"]
+        self.open_pip = open_state["pip"]
+        self.open_rubygems = open_state["rubygems"]
+        self.open_nuget = open_state["nuget"]
+        self.open_maven = open_state["maven"]
+        self.open_composer = open_state["composer"]
+        self.open_rust = open_state["rust"]
+        self.open_unknown = open_state["unknown"]
 
-        (
-            self.fixed_npm,
-            self.fixed_pip,
-            self.fixed_rubygems,
-            self.fixed_nuget,
-            self.fixed_maven,
-            self.fixed_composer,
-            self.fixed_rust,
-            self.fixed_unknown,
-        ) = self.get_eco_data("fixed", repo_dict)
+        self.fixed_npm = fixed_state["npm"]
+        self.fixed_pip = fixed_state["pip"]
+        self.fixed_rubygems = fixed_state["rubygems"]
+        self.fixed_nuget = fixed_state["nuget"]
+        self.fixed_maven = fixed_state["maven"]
+        self.fixed_composer = fixed_state["composer"]
+        self.fixed_rust = fixed_state["rust"]
+        self.fixed_unknown = fixed_state["unknown"]
 
-        (
-            self.dismissed_npm,
-            self.dismissed_pip,
-            self.dismissed_rubygems,
-            self.dismissed_nuget,
-            self.dismissed_maven,
-            self.dismissed_composer,
-            self.dismissed_rust,
-            self.dismissed_unknown,
-        ) = self.get_eco_data("dismissed", repo_dict)
+        self.dismissed_npm = dismissed_state["npm"]
+        self.dismissed_pip = dismissed_state["pip"]
+        self.dismissed_rubygems = dismissed_state["rubygems"]
+        self.dismissed_nuget = dismissed_state["nuget"]
+        self.dismissed_maven = dismissed_state["maven"]
+        self.dismissed_composer = dismissed_state["composer"]
+        self.dismissed_rust = dismissed_state["rust"]
+        self.dismissed_unknown = dismissed_state["unknown"]
 
         self.priority = self.get_crit_high_sum()
 
-    def get_language(self, item_dict, eco_dict):
+    def parse_data(self, item_dict, sev_dict):
 
-        if item_dict["dependency"]["package"]["ecosystem"] == "npm":
-            eco_dict["npm"] += 1
-        elif item_dict["dependency"]["package"]["ecosystem"] == "pip":
-            eco_dict["pip"] += 1
-        elif item_dict["dependency"]["package"]["ecosystem"] == "rubygems":
-            eco_dict["rubygems"] += 1
-        elif item_dict["dependency"]["package"]["ecosystem"] == "nuget":
-            eco_dict["nuget"] += 1
-        elif item_dict["dependency"]["package"]["ecosystem"] == "maven":
-            eco_dict["maven"] += 1
-        elif item_dict["dependency"]["package"]["ecosystem"] == "composer":
-            eco_dict["composer"] += 1
-        elif item_dict["dependency"]["package"]["ecosystem"] == "rust":
-            eco_dict["rust"] += 1
-        else:
-            eco_dict["unknown"] += 1
-
-        return eco_dict
-
-    def get_eco_data(self, state, repo_dict):
-
-        get_eco_dict = {
-            "npm": 0,
-            "pip": 0,
-            "rubygems": 0,
-            "nuget": 0,
-            "maven": 0,
-            "composer": 0,
-            "rust": 0,
-            "unknown": 0,
-        }
-
-        for item in repo_dict:
-            if item["state"] == state:
-                if state == "open":
-                    get_eco_dict = self.get_language(item, get_eco_dict)
-                if state == "fixed":
-                    get_eco_dict = self.get_language(item, get_eco_dict)
-                if state == "dismissed":
-                    get_eco_dict = self.get_language(item, get_eco_dict)
-
-        return (
-            get_eco_dict["npm"],
-            get_eco_dict["pip"],
-            get_eco_dict["rubygems"],
-            get_eco_dict["nuget"],
-            get_eco_dict["maven"],
-            get_eco_dict["composer"],
-            get_eco_dict["rust"],
-            get_eco_dict["unknown"],
-        )
-
-    def get_severity_data(self, item_dict, sev_dict):
+        sev_dict["total"] += 1
 
         if item_dict["security_advisory"]["severity"] == "critical":
             sev_dict["crit"] += 1
@@ -138,8 +82,25 @@ class Repo:
             sev_dict["high"] += 1
         elif item_dict["security_advisory"]["severity"] == "medium":
             sev_dict["med"] += 1
-        elif item_dict["security_advisory"]["severity"] == "low":
+        else:
             sev_dict["low"] += 1
+
+        if item_dict["dependency"]["package"]["ecosystem"] == "npm":
+            sev_dict["npm"] += 1
+        elif item_dict["dependency"]["package"]["ecosystem"] == "pip":
+            sev_dict["pip"] += 1
+        elif item_dict["dependency"]["package"]["ecosystem"] == "rubygems":
+            sev_dict["rubygems"] += 1
+        elif item_dict["dependency"]["package"]["ecosystem"] == "nuget":
+            sev_dict["nuget"] += 1
+        elif item_dict["dependency"]["package"]["ecosystem"] == "maven":
+            sev_dict["maven"] += 1
+        elif item_dict["dependency"]["package"]["ecosystem"] == "composer":
+            sev_dict["composer"] += 1
+        elif item_dict["dependency"]["package"]["ecosystem"] == "rust":
+            sev_dict["rust"] += 1
+        else:
+            sev_dict["unknown"] += 1
 
         return sev_dict
 
@@ -152,6 +113,14 @@ class Repo:
             "med": 0,
             "low": 0,
             "date": "",
+            "npm": 0,
+            "pip": 0,
+            "rubygems": 0,
+            "nuget": 0,
+            "maven": 0,
+            "composer": 0,
+            "rust": 0,
+            "unknown": 0,
         }
         date_list_open = []
 
@@ -162,6 +131,14 @@ class Repo:
             "med": 0,
             "low": 0,
             "date": "",
+            "npm": 0,
+            "pip": 0,
+            "rubygems": 0,
+            "nuget": 0,
+            "maven": 0,
+            "composer": 0,
+            "rust": 0,
+            "unknown": 0,
         }
         date_list_fixed = []
 
@@ -172,14 +149,22 @@ class Repo:
             "med": 0,
             "low": 0,
             "date": "",
+            "npm": 0,
+            "pip": 0,
+            "rubygems": 0,
+            "nuget": 0,
+            "maven": 0,
+            "composer": 0,
+            "rust": 0,
+            "unknown": 0,
         }
         date_list_dismissed = []
 
         for item in repo_dict:
             if item["state"] == "open":
-                state_open["total"] += 1
-                state_open = self.get_severity_data(item, state_open)
+                state_open = self.parse_data(item, state_open)
 
+                # get earliest date of reported alert (aka oldest date)
                 temp_pub_at_date = item["security_advisory"]["published_at"]
                 date_list_open.append(
                     datetime.strptime(temp_pub_at_date, "%Y-%m-%dT%H:%M:%SZ")
@@ -187,9 +172,9 @@ class Repo:
                 state_open["date"] = str(min(date_list_open))
 
             elif item["state"] == "fixed":
-                state_fixed["total"] += 1
-                # state_fixed = self.get_severity_data(item, state_fixed)
+                state_fixed = self.parse_data(item, state_fixed)
 
+                # get latest date of fixed alert (aka most recent date)
                 temp_fixed_at_date = item["fixed_at"]
                 date_list_fixed.append(
                     datetime.strptime(temp_fixed_at_date, "%Y-%m-%dT%H:%M:%SZ")
@@ -197,9 +182,9 @@ class Repo:
                 state_fixed["date"] = str(max(date_list_fixed))
 
             elif item["state"] == "dismissed":
-                state_dismissed["total"] += 1
-                # state_dismissed = self.get_severity_data(item, state_dismissed)
+                state_dismissed = self.parse_data(item, state_dismissed)
 
+                # get latest date of dismissed alert (aka most recent date)
                 temp_dismissed_at_date = item["dismissed_at"]
                 date_list_dismissed.append(
                     datetime.strptime(
