@@ -18,58 +18,92 @@ class Repo:
     def __init__(self, name, repo_dict):
 
         self.name = name
-        open_state, fixed_state, dismissed_state = self.get_state_data(
-            repo_dict
-        )
+        (
+            state_open,
+            state_fixed,
+            state_dismissed,
+        ) = self.get_state_data(repo_dict)
 
-        self.total_open = open_state["total"]
-        self.open_crit = open_state["crit"]
-        self.open_high = open_state["high"]
-        self.open_med = open_state["med"]
-        self.open_low = open_state["low"]
-        self.first_published_at = open_state["date"]
+        # rewrite the dictionaries keys to match the state
+        # this will enable the instance attributes to be exposed independently
+        self.open_state = {
+            f"Open {key}": value for key, value in state_open.items()
+        }
 
-        self.total_fixed = fixed_state["total"]
-        self.fixed_crit = fixed_state["crit"]
-        self.fixed_high = fixed_state["high"]
-        self.fixed_med = fixed_state["med"]
-        self.fixed_low = fixed_state["low"]
-        self.last_fixed_at = fixed_state["date"]
+        self.fixed_state = {
+            f"Fixed {key}": value for key, value in state_fixed.items()
+        }
 
-        self.total_dismissed = dismissed_state["total"]
-        self.dismissed_crit = dismissed_state["crit"]
-        self.dismissed_high = dismissed_state["high"]
-        self.dismissed_med = dismissed_state["med"]
-        self.dismissed_low = dismissed_state["low"]
-        self.last_dismissed_at = dismissed_state["date"]
+        self.dismissed_state = {
+            f"Dismissed {key}": value for key, value in state_dismissed.items()
+        }
 
-        self.open_npm = open_state["npm"]
-        self.open_pip = open_state["pip"]
-        self.open_rubygems = open_state["rubygems"]
-        self.open_nuget = open_state["nuget"]
-        self.open_maven = open_state["maven"]
-        self.open_composer = open_state["composer"]
-        self.open_rust = open_state["rust"]
-        self.open_unknown = open_state["unknown"]
+        pprint.pprint(self.open_state)
+        print()
+        print(self.open_state)
 
-        self.fixed_npm = fixed_state["npm"]
-        self.fixed_pip = fixed_state["pip"]
-        self.fixed_rubygems = fixed_state["rubygems"]
-        self.fixed_nuget = fixed_state["nuget"]
-        self.fixed_maven = fixed_state["maven"]
-        self.fixed_composer = fixed_state["composer"]
-        self.fixed_rust = fixed_state["rust"]
-        self.fixed_unknown = fixed_state["unknown"]
+        pprint.pprint(self.fixed_state)
+        print()
+        print(self.fixed_state)
 
-        self.dismissed_npm = dismissed_state["npm"]
-        self.dismissed_pip = dismissed_state["pip"]
-        self.dismissed_rubygems = dismissed_state["rubygems"]
-        self.dismissed_nuget = dismissed_state["nuget"]
-        self.dismissed_maven = dismissed_state["maven"]
-        self.dismissed_composer = dismissed_state["composer"]
-        self.dismissed_rust = dismissed_state["rust"]
-        self.dismissed_unknown = dismissed_state["unknown"]
+        pprint.pprint(self.dismissed_state)
+        print()
+        print(self.dismissed_state)
 
+        #        print(self.open_state)
+        #        print(self.fixed_state)
+        #        print()
+        #        print(self.open_state.update(self.fixed_state))
+        #        print(self.open_state)
+
+        #        self.total_open = open_state["total"]
+        #        self.open_crit = open_state["crit"]
+        #        self.open_high = open_state["high"]
+        #        self.open_med = open_state["med"]
+        #        self.open_low = open_state["low"]
+        #        self.first_published_at = open_state["date"]
+        #
+        #        self.total_fixed = fixed_state["total"]
+        #        self.fixed_crit = fixed_state["crit"]
+        #        self.fixed_high = fixed_state["high"]
+        #        self.fixed_med = fixed_state["med"]
+        #        self.fixed_low = fixed_state["low"]
+        #        self.last_fixed_at = fixed_state["date"]
+        #
+        #        self.total_dismissed = dismissed_state["total"]
+        #        self.dismissed_crit = dismissed_state["crit"]
+        #        self.dismissed_high = dismissed_state["high"]
+        #        self.dismissed_med = dismissed_state["med"]
+        #        self.dismissed_low = dismissed_state["low"]
+        #        self.last_dismissed_at = dismissed_state["date"]
+        #
+        #        self.open_npm = open_state["npm"]
+        #        self.open_pip = open_state["pip"]
+        #        self.open_rubygems = open_state["rubygems"]
+        #        self.open_nuget = open_state["nuget"]
+        #        self.open_maven = open_state["maven"]
+        #        self.open_composer = open_state["composer"]
+        #        self.open_rust = open_state["rust"]
+        #        self.open_unknown = open_state["unknown"]
+        #
+        #        self.fixed_npm = fixed_state["npm"]
+        #        self.fixed_pip = fixed_state["pip"]
+        #        self.fixed_rubygems = fixed_state["rubygems"]
+        #        self.fixed_nuget = fixed_state["nuget"]
+        #        self.fixed_maven = fixed_state["maven"]
+        #        self.fixed_composer = fixed_state["composer"]
+        #        self.fixed_rust = fixed_state["rust"]
+        #        self.fixed_unknown = fixed_state["unknown"]
+        #
+        #        self.dismissed_npm = dismissed_state["npm"]
+        #        self.dismissed_pip = dismissed_state["pip"]
+        #        self.dismissed_rubygems = dismissed_state["rubygems"]
+        #        self.dismissed_nuget = dismissed_state["nuget"]
+        #        self.dismissed_maven = dismissed_state["maven"]
+        #        self.dismissed_composer = dismissed_state["composer"]
+        #        self.dismissed_rust = dismissed_state["rust"]
+        #        self.dismissed_unknown = dismissed_state["unknown"]
+        #
         self.priority = self.get_crit_high_sum()
 
     def parse_data(self, item_dict, sev_dict):
@@ -196,7 +230,8 @@ class Repo:
         return state_open, state_fixed, state_dismissed
 
     def get_crit_high_sum(self):
-        return self.open_crit + self.open_high
+        return self.open_state["Open crit"] + self.open_state["Open high"]
+        # return self.open_crit + self.open_high
 
 
 def get_files(dir):
@@ -377,13 +412,13 @@ def main():
     write_csv_data(sorted_data)
     write_txt_data(sorted_data)
 
-    org_data = get_org_data(
-        files_no_alerts, input_files, files_dependabot_disabled, parsed_data
-    )
-
-    write_org_data(org_data)
+    # org_data = get_org_data(
+    # files_no_alerts, input_files, files_dependabot_disabled, parsed_data
+    # )
+    #
+    # write_org_data(org_data)
     print()
-    print(org_data)
+    # print(org_data)
 
 
 if __name__ == "__main__":
