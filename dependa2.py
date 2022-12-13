@@ -17,94 +17,39 @@ from pathlib import Path
 class Repo:
     def __init__(self, name, repo_dict):
 
-        self.name = name
         (
             state_open,
             state_fixed,
             state_dismissed,
         ) = self.get_state_data(repo_dict)
 
-        # rewrite the dictionaries keys to match the state
-        # this will enable the instance attributes to be exposed independently
-        self.open_state = {
+        # amend the dictionaries keys to reflect the state
+        open_state = {
             f"Open {key}": value for key, value in state_open.items()
         }
-
-        self.fixed_state = {
+        fixed_state = {
             f"Fixed {key}": value for key, value in state_fixed.items()
         }
-
-        self.dismissed_state = {
+        dismissed_state = {
             f"Dismissed {key}": value for key, value in state_dismissed.items()
         }
 
-        pprint.pprint(self.open_state)
-        print()
-        print(self.open_state)
+        # set a priority level of remediation for each repo
+        priority = state_open["high"] + state_open["crit"]
 
-        pprint.pprint(self.fixed_state)
-        print()
-        print(self.fixed_state)
+        name_dict = {}
+        name_dict["name"] = name
+        priority_dict = {}
+        priority_dict["priority"] = priority
 
-        pprint.pprint(self.dismissed_state)
-        print()
-        print(self.dismissed_state)
-
-        #        print(self.open_state)
-        #        print(self.fixed_state)
-        #        print()
-        #        print(self.open_state.update(self.fixed_state))
-        #        print(self.open_state)
-
-        #        self.total_open = open_state["total"]
-        #        self.open_crit = open_state["crit"]
-        #        self.open_high = open_state["high"]
-        #        self.open_med = open_state["med"]
-        #        self.open_low = open_state["low"]
-        #        self.first_published_at = open_state["date"]
-        #
-        #        self.total_fixed = fixed_state["total"]
-        #        self.fixed_crit = fixed_state["crit"]
-        #        self.fixed_high = fixed_state["high"]
-        #        self.fixed_med = fixed_state["med"]
-        #        self.fixed_low = fixed_state["low"]
-        #        self.last_fixed_at = fixed_state["date"]
-        #
-        #        self.total_dismissed = dismissed_state["total"]
-        #        self.dismissed_crit = dismissed_state["crit"]
-        #        self.dismissed_high = dismissed_state["high"]
-        #        self.dismissed_med = dismissed_state["med"]
-        #        self.dismissed_low = dismissed_state["low"]
-        #        self.last_dismissed_at = dismissed_state["date"]
-        #
-        #        self.open_npm = open_state["npm"]
-        #        self.open_pip = open_state["pip"]
-        #        self.open_rubygems = open_state["rubygems"]
-        #        self.open_nuget = open_state["nuget"]
-        #        self.open_maven = open_state["maven"]
-        #        self.open_composer = open_state["composer"]
-        #        self.open_rust = open_state["rust"]
-        #        self.open_unknown = open_state["unknown"]
-        #
-        #        self.fixed_npm = fixed_state["npm"]
-        #        self.fixed_pip = fixed_state["pip"]
-        #        self.fixed_rubygems = fixed_state["rubygems"]
-        #        self.fixed_nuget = fixed_state["nuget"]
-        #        self.fixed_maven = fixed_state["maven"]
-        #        self.fixed_composer = fixed_state["composer"]
-        #        self.fixed_rust = fixed_state["rust"]
-        #        self.fixed_unknown = fixed_state["unknown"]
-        #
-        #        self.dismissed_npm = dismissed_state["npm"]
-        #        self.dismissed_pip = dismissed_state["pip"]
-        #        self.dismissed_rubygems = dismissed_state["rubygems"]
-        #        self.dismissed_nuget = dismissed_state["nuget"]
-        #        self.dismissed_maven = dismissed_state["maven"]
-        #        self.dismissed_composer = dismissed_state["composer"]
-        #        self.dismissed_rust = dismissed_state["rust"]
-        #        self.dismissed_unknown = dismissed_state["unknown"]
-        #
-        self.priority = self.get_crit_high_sum()
+        # returned the parsed data as a large dictionary
+        self.parsed_data = {
+            **name_dict,
+            **open_state,
+            **fixed_state,
+            **dismissed_state,
+            **priority_dict,
+        }
 
     def parse_data(self, item_dict, sev_dict):
 
@@ -198,7 +143,7 @@ class Repo:
             if item["state"] == "open":
                 state_open = self.parse_data(item, state_open)
 
-                # get earliest date of reported alert (aka oldest date)
+                # get earliest date of reported alert (oldest date)
                 temp_pub_at_date = item["security_advisory"]["published_at"]
                 date_list_open.append(
                     datetime.strptime(temp_pub_at_date, "%Y-%m-%dT%H:%M:%SZ")
@@ -208,7 +153,7 @@ class Repo:
             elif item["state"] == "fixed":
                 state_fixed = self.parse_data(item, state_fixed)
 
-                # get latest date of fixed alert (aka most recent date)
+                # get latest date of fixed alert (most recent date)
                 temp_fixed_at_date = item["fixed_at"]
                 date_list_fixed.append(
                     datetime.strptime(temp_fixed_at_date, "%Y-%m-%dT%H:%M:%SZ")
@@ -218,7 +163,7 @@ class Repo:
             elif item["state"] == "dismissed":
                 state_dismissed = self.parse_data(item, state_dismissed)
 
-                # get latest date of dismissed alert (aka most recent date)
+                # get latest date of dismissed alert (most recent date)
                 temp_dismissed_at_date = item["dismissed_at"]
                 date_list_dismissed.append(
                     datetime.strptime(
@@ -228,10 +173,6 @@ class Repo:
                 state_dismissed["date"] = str(max(date_list_dismissed))
 
         return state_open, state_fixed, state_dismissed
-
-    def get_crit_high_sum(self):
-        return self.open_state["Open crit"] + self.open_state["Open high"]
-        # return self.open_crit + self.open_high
 
 
 def get_files(dir):
@@ -402,7 +343,12 @@ def main():
 
         # create object for every repo
         input_file = Repo(input_file.stem, dependa_dict)
-        parsed_data.append(vars(input_file))
+        # parsed_data.append(vars(input_file))
+        parsed_data.append(input_file.parsed_data)
+
+    print(parsed_data)
+    pprint.pprint(parsed_data)
+    print(str(type(parsed_data)))
 
     # sort the data by priority number (sum of high and critical vulns)
     sorted_data = sorted(
@@ -417,7 +363,7 @@ def main():
     # )
     #
     # write_org_data(org_data)
-    print()
+    # print()
     # print(org_data)
 
 
