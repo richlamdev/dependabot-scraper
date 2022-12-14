@@ -34,15 +34,15 @@ class Repo:
             f"Dismissed {key}": value for key, value in state_dismissed.items()
         }
 
-        # set a priority level of remediation for each repo
-        priority = state_open["high"] + state_open["crit"]
+        # set a priority level for remediation for each repo
+        priority = open_state["Open Crit"] + open_state["Open High"]
 
         name_dict = {}
-        name_dict["name"] = name
+        name_dict["Name"] = name
         priority_dict = {}
-        priority_dict["priority"] = priority
+        priority_dict["Priority"] = priority
 
-        # returned the parsed data as a large dictionary
+        # returned the parsed data as a single large dictionary
         self.parsed_data = {
             **name_dict,
             **open_state,
@@ -51,91 +51,95 @@ class Repo:
             **priority_dict,
         }
 
-    def parse_data(self, item_dict, sev_dict):
+    def parse_data(self, item_dict, parsed_dict):
 
-        sev_dict["total"] += 1
+        severity = item_dict["security_advisory"]["severity"]
+        ecosystem = item_dict["dependency"]["package"]["ecosystem"]
+        parsed_dict["Total"] += 1
 
-        if item_dict["security_advisory"]["severity"] == "critical":
-            sev_dict["crit"] += 1
-        elif item_dict["security_advisory"]["severity"] == "high":
-            sev_dict["high"] += 1
-        elif item_dict["security_advisory"]["severity"] == "medium":
-            sev_dict["med"] += 1
+        if severity == "critical":
+            parsed_dict["Crit"] += 1
+        elif severity == "high":
+            parsed_dict["High"] += 1
+        elif severity == "medium":
+            parsed_dict["Med"] += 1
         else:
-            sev_dict["low"] += 1
+            parsed_dict["Low"] += 1
 
-        if item_dict["dependency"]["package"]["ecosystem"] == "npm":
-            sev_dict["npm"] += 1
-        elif item_dict["dependency"]["package"]["ecosystem"] == "pip":
-            sev_dict["pip"] += 1
-        elif item_dict["dependency"]["package"]["ecosystem"] == "rubygems":
-            sev_dict["rubygems"] += 1
-        elif item_dict["dependency"]["package"]["ecosystem"] == "nuget":
-            sev_dict["nuget"] += 1
-        elif item_dict["dependency"]["package"]["ecosystem"] == "maven":
-            sev_dict["maven"] += 1
-        elif item_dict["dependency"]["package"]["ecosystem"] == "composer":
-            sev_dict["composer"] += 1
-        elif item_dict["dependency"]["package"]["ecosystem"] == "rust":
-            sev_dict["rust"] += 1
+        if ecosystem == "npm":
+            parsed_dict["Npm"] += 1
+        elif ecosystem == "pip":
+            parsed_dict["Pip"] += 1
+        elif ecosystem == "rubygems":
+            parsed_dict["Rubygems"] += 1
+        elif ecosystem == "nuget":
+            parsed_dict["Nuget"] += 1
+        elif ecosystem == "maven":
+            parsed_dict["Maven"] += 1
+        elif ecosystem == "composer":
+            parsed_dict["Composer"] += 1
+        elif ecosystem == "rust":
+            parsed_dict["Rust"] += 1
         else:
-            sev_dict["unknown"] += 1
+            parsed_dict["Unknown"] += 1
 
-        return sev_dict
+        return parsed_dict
 
     def get_state_data(self, repo_dict):
 
+        # each of these dictionaries have the same keys to enable
+        # parse_data function be called consistently
         state_open = {
-            "total": 0,
-            "crit": 0,
-            "high": 0,
-            "med": 0,
-            "low": 0,
-            "date": "",
-            "npm": 0,
-            "pip": 0,
-            "rubygems": 0,
-            "nuget": 0,
-            "maven": 0,
-            "composer": 0,
-            "rust": 0,
-            "unknown": 0,
+            "Total": 0,
+            "Crit": 0,
+            "High": 0,
+            "Med": 0,
+            "Low": 0,
+            "Date": "",
+            "Npm": 0,
+            "Pip": 0,
+            "Rubygems": 0,
+            "Nuget": 0,
+            "Maven": 0,
+            "Composer": 0,
+            "Rust": 0,
+            "Unknown": 0,
         }
         date_list_open = []
 
         state_fixed = {
-            "total": 0,
-            "crit": 0,
-            "high": 0,
-            "med": 0,
-            "low": 0,
-            "date": "",
-            "npm": 0,
-            "pip": 0,
-            "rubygems": 0,
-            "nuget": 0,
-            "maven": 0,
-            "composer": 0,
-            "rust": 0,
-            "unknown": 0,
+            "Total": 0,
+            "Crit": 0,
+            "High": 0,
+            "Med": 0,
+            "Low": 0,
+            "Date": "",
+            "Npm": 0,
+            "Pip": 0,
+            "Rubygems": 0,
+            "Nuget": 0,
+            "Maven": 0,
+            "Composer": 0,
+            "Rust": 0,
+            "Unknown": 0,
         }
         date_list_fixed = []
 
         state_dismissed = {
-            "total": 0,
-            "crit": 0,
-            "high": 0,
-            "med": 0,
-            "low": 0,
-            "date": "",
-            "npm": 0,
-            "pip": 0,
-            "rubygems": 0,
-            "nuget": 0,
-            "maven": 0,
-            "composer": 0,
-            "rust": 0,
-            "unknown": 0,
+            "Total": 0,
+            "Crit": 0,
+            "High": 0,
+            "Med": 0,
+            "Low": 0,
+            "Date": "",
+            "Npm": 0,
+            "Pip": 0,
+            "Rubygems": 0,
+            "Nuget": 0,
+            "Maven": 0,
+            "Composer": 0,
+            "Rust": 0,
+            "Unknown": 0,
         }
         date_list_dismissed = []
 
@@ -352,7 +356,7 @@ def main():
 
     # sort the data by priority number (sum of high and critical vulns)
     sorted_data = sorted(
-        parsed_data, key=lambda d: d["priority"], reverse=True
+        parsed_data, key=lambda d: d["Priority"], reverse=True
     )
 
     write_csv_data(sorted_data)
