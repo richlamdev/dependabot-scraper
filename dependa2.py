@@ -87,9 +87,8 @@ class Repo:
 
     def get_state_data(self, repo_dict):
 
-        # each of these dictionaries have the same keys to enable
-        # parse_data function be called consistently
-        state_open = {
+        # template dictionary keys to reuse parse_data function
+        state_template = {
             "Total": 0,
             "Crit": 0,
             "High": 0,
@@ -105,42 +104,13 @@ class Repo:
             "Rust": 0,
             "Unknown": 0,
         }
+        state_open = dict(state_template)
         date_list_open = []
 
-        state_fixed = {
-            "Total": 0,
-            "Crit": 0,
-            "High": 0,
-            "Med": 0,
-            "Low": 0,
-            "Date": "",
-            "Npm": 0,
-            "Pip": 0,
-            "Rubygems": 0,
-            "Nuget": 0,
-            "Maven": 0,
-            "Composer": 0,
-            "Rust": 0,
-            "Unknown": 0,
-        }
+        state_fixed = dict(state_template)
         date_list_fixed = []
 
-        state_dismissed = {
-            "Total": 0,
-            "Crit": 0,
-            "High": 0,
-            "Med": 0,
-            "Low": 0,
-            "Date": "",
-            "Npm": 0,
-            "Pip": 0,
-            "Rubygems": 0,
-            "Nuget": 0,
-            "Maven": 0,
-            "Composer": 0,
-            "Rust": 0,
-            "Unknown": 0,
-        }
+        state_dismissed = dict(state_template)
         date_list_dismissed = []
 
         for item in repo_dict:
@@ -152,7 +122,7 @@ class Repo:
                 date_list_open.append(
                     datetime.strptime(temp_pub_at_date, "%Y-%m-%dT%H:%M:%SZ")
                 )
-                state_open["date"] = str(min(date_list_open))
+                state_open["Date"] = str(min(date_list_open))
 
             elif item["state"] == "fixed":
                 state_fixed = self.parse_data(item, state_fixed)
@@ -162,7 +132,7 @@ class Repo:
                 date_list_fixed.append(
                     datetime.strptime(temp_fixed_at_date, "%Y-%m-%dT%H:%M:%SZ")
                 )
-                state_fixed["date"] = str(max(date_list_fixed))
+                state_fixed["Date"] = str(max(date_list_fixed))
 
             elif item["state"] == "dismissed":
                 state_dismissed = self.parse_data(item, state_dismissed)
@@ -174,7 +144,7 @@ class Repo:
                         temp_dismissed_at_date, "%Y-%m-%dT%H:%M:%SZ"
                     )
                 )
-                state_dismissed["date"] = str(max(date_list_dismissed))
+                state_dismissed["Date"] = str(max(date_list_dismissed))
 
         return state_open, state_fixed, state_dismissed
 
@@ -294,6 +264,8 @@ def write_csv_data(sorted_data):
     repo_header = sorted_data[0].keys()
     parsed_data_csv = "parsed_data2.csv"
 
+    print(repo_header)
+
     with open(parsed_data_csv, "w") as parsed_data_file:
         writer = csv.DictWriter(parsed_data_file, fieldnames=repo_header)
         writer.writeheader()
@@ -350,14 +322,18 @@ def main():
         # parsed_data.append(vars(input_file))
         parsed_data.append(input_file.parsed_data)
 
-    print(parsed_data)
-    pprint.pprint(parsed_data)
-    print(str(type(parsed_data)))
+    # print(parsed_data)
+    # pprint.pprint(parsed_data)
+    # print(str(type(parsed_data)))
 
     # sort the data by priority number (sum of high and critical vulns)
     sorted_data = sorted(
         parsed_data, key=lambda d: d["Priority"], reverse=True
     )
+
+    print()
+    pprint.pprint(sorted_data)
+    print()
 
     write_csv_data(sorted_data)
     write_txt_data(sorted_data)
