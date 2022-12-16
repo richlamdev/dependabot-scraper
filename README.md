@@ -42,7 +42,7 @@ with Python 3.6 and above.  (f-strings used in print statements)
   Eg: ```./get_all_dependabot.sh procurify```
 
 3. ~~```python3 dependa.py```~~  Use dependa2.py instead, better implementation;
-  less use of loops.
+  less use of loops.\
   ```python3 dependa2.py```
 
 
@@ -74,6 +74,7 @@ Slack)
    paramaeters.
 3. Optimize code (reduce some repetitive code).
 4. Generate graphics with Plotly or alternative graphing module with Python.(?)
+5. Add Docstrings and type hints to the Repo Class, methods, and functions.
 
 
 ## References
