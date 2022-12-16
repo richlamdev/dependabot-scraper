@@ -2,17 +2,19 @@
   * [Introduction](#introduction)
   * [Prerequisites](#prerequisites)
   * [Quick Start](#quick-start)
+  * [Notes](#notes)
   * [TODO](#todo)
   * [License](#license)
   * [Contributing](#contributing)
 
 # Dependabot Scraper
+
 Dependabot Information scraper for Github
 
 
 ## Introduction
 
-The two scripts scrape and parse, respectively, information regarding 
+The two scripts scrape and parse, respectively, information regarding
 dependabot alerts for Github repositories belonging to an organization.
 
 Primary data points parsed are open, fixed, dismissed vulnerabilities, and
@@ -26,7 +28,7 @@ ecosystem (programming language) type of vulnerability.
   * To properly read all repos a Github token with _security_events_ scope to
 read private repositories is required.
 * [JQ](https://stedolan.github.io/jq/download/)
-* Python 3 - This was developed and tested with Python 3.10.  Likely to work 
+* Python 3 - This was developed and tested with Python 3.10.  Likely to work
 with Python 3.6 and above.  (f-strings used in print statements)
 
 
@@ -39,22 +41,30 @@ with Python 3.6 and above.  (f-strings used in print statements)
 2. ```./get_all_dependabot.sh <name of organization>```\
   Eg: ```./get_all_dependabot.sh procurify```
 
-3. ```python3 dependa.py```
+3. ~~```python3 dependa.py```~~  Use dependa2.py instead, better implementation;
+  less use of loops.
+  ```python3 dependa2.py```
+
 
 4. Output (CSV) files are written to the current folder.
-  * JSON files for each repo is saved to ./output folder, in the event manual
+    * JSON files for each repo is saved to ./output folder, in the event manual
 review is needed.  This data can also be viewed via Github, assuming
 appropriate permissions are granted.
 
 
 ## Notes
 
-1. Technically jq is unceessary for either the bash or the python script.
-Jq is used to provide convenient human readable review of the json files, if 
-needed.  (Otherwise all the json returns (files) are in a single line.)
+1. Jq is unceessary for either the bash or the python script.  Jq is used to 
+provide convenient human readable review of the json files, if needed.
+(Otherwise all the json returns (files) are in a single line.)
+
+2. Optimization considerations:
+    * Query Github via [GraphQL](https://github.blog/changelog/2022-06-29-dependabot-alerts-dependency-scope-filter-via-graphql-api/)
+    * Vectorization via [NumPy](https://numpy.org/) or [Pandas](https://pandas.pydata.org/)
+    (Pandas is built on top of NumPy)
 
 
-## ToDo
+## TODO
 
 1. Remove dependency on gh cli command and almalgamate both scripts to
 a single Python script.  (potentially have this run on as an AWS Lambda and
@@ -73,6 +83,7 @@ Slack)
 [List dependabot alerts](https://docs.github.com/en/rest/dependabot/alerts#list-dependabot-alerts-for-a-repository)\
 [Working with Dependabot](https://docs.github.com/en/code-security/dependabot/working-with-dependabot)\
 [Github Dependabot Blog](https://github.blog/2020-06-01-keep-all-your-packages-up-to-date-with-dependabot/)
+
 
 ## License
 
