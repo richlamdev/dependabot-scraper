@@ -265,7 +265,7 @@ def validate_json(json_list):
     return valid_json_files, invalid_json_files
 
 
-def get_org_data(
+def write_org_data(
     repos_no_vulns, repos_with_vulns, repos_disabled, parsed_data
 ):
 
@@ -308,7 +308,15 @@ def get_org_data(
         org_data["open rust"] += parsed_data[data]["open_rust"]
         org_data["open unknown"] += parsed_data[data]["open_unknown"]
 
-    return org_data
+    org_data_header = org_data.keys()
+    org_data_csv = "org_data.csv"
+    with open(org_data_csv, "w") as org_data_file:
+        writer = csv.DictWriter(org_data_file, fieldnames=org_data_header)
+        writer.writeheader()
+        writer.writerow(org_data)
+    print()
+    print(f"CSV of all organization data written to {org_data_csv}")
+    print()
 
 
 def write_csv_data(sorted_data):
@@ -339,19 +347,6 @@ def write_txt_data(sorted_data):
     print(f"Text file of all dependabot repos written to {parsed_data_txt}")
 
 
-def write_org_data(org_data):
-
-    all_repo_header = org_data.keys()
-    org_data_csv = "org_data.csv"
-    with open(org_data_csv, "w") as org_data_file:
-        writer = csv.DictWriter(org_data_file, fieldnames=all_repo_header)
-        writer.writeheader()
-        writer.writerow(org_data)
-    print()
-    print(f"CSV of all organization data written to {org_data_csv}")
-    print()
-
-
 def main():
 
     parsed_data = []
@@ -378,14 +373,9 @@ def main():
 
     write_csv_data(sorted_data)
     write_txt_data(sorted_data)
-
-    org_data = get_org_data(
+    write_org_data(
         files_no_alerts, input_files, files_dependabot_disabled, parsed_data
     )
-
-    write_org_data(org_data)
-    print()
-    print(org_data)
 
 
 if __name__ == "__main__":
