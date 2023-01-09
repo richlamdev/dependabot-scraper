@@ -32,6 +32,29 @@ class Repo:
         # returned the parsed data as a single large dictionary
         self.parsed_data = {"Name": name}
         self.parsed_data.update(combined_data)
+        self.current_time = datetime.now()
+
+    def get_critical_slo(self):
+
+        MAX_SLO_DAYS = 15
+        date_list_critical = []
+        critical_slo_exceeded = []
+
+        for item in repo_dict:
+            if item["state"] == "open" and item["severity"] == "critical":
+
+                # keep only first reported open alert date
+                temp_pub_at_date = item["security_advisory"]["published_at"]
+                print(f"temp_pub_at_date: {temp_fixed_at_date}")
+
+                # slo_exceeded = temp_
+
+                # date_list_critical.append(
+                # datetime.strptime(temp_pub_at_date, "%Y-%m-%dT%H:%M:%SZ")
+                # )
+                # state_open["Date"] = str(min(date_list_open))
+
+        return temp_pub_at_date
 
     def get_state_data(self, repo_dict):
 
@@ -308,6 +331,10 @@ def main():
         input_file = Repo(input_file.stem, dependa_dict)
         # parsed_data.append(vars(input_file))
         parsed_data.append(input_file.parsed_data)
+
+        temp_critical_var = input_file.get_critical_slo()
+
+        print(type(temp_critical_var))
 
     # sort the data by priority number (sum of high and critical vulns)
     sorted_data = sorted(
