@@ -17,11 +17,13 @@ from pathlib import Path
 class Repo:
     def __init__(self, name, repo_dict):
 
+        self.repo_dict = repo_dict
+
         (
             state_open,
             state_fixed,
             state_dismissed,
-        ) = self.get_state_data(repo_dict)
+        ) = self.get_state_data()
 
         combined_data = {
             **state_open,
@@ -32,84 +34,76 @@ class Repo:
         # returned the parsed data as a single large dictionary
         self.parsed_data = {"Name": name}
         self.parsed_data.update(combined_data)
-        self.current_time = datetime.now()
-        self.repo_dict = repo_dict
 
     def get_slo(self):
 
         CRIT_MAX_SLO_DAYS = 15
         HIGH_MAX_SLO_DAYS = 30
-        MED_MAX_SLO_DAYS = 60
-        LOW_MAX_SLO_DAYS = 90
+        MED_MAX_SLO_DAYS = 90
+        LOW_MAX_SLO_DAYS = 180
 
+        current_time = datetime.now()
         slo = {
-            "crit_exceeded": 0,
-            "high_exceeded": 0,
-            "med_exceeded": 0,
-            "low_exceeded": 0,
+            "Crit Exceeded": 0,
+            "Crit Total": self.parsed_data["Open Crit"],
+            "High Exceeded": 0,
+            "High Total": self.parsed_data["Open High"],
+            "Med Exceeded": 0,
+            "Med Total": self.parsed_data["Open Med"],
+            "Low Exceeded": 0,
+            "Low Total": self.parsed_data["Open Low"],
         }
 
         for item in self.repo_dict:
-            if (
-                item["state"] == "open"
-                and item["security_advisory"]["severity"] == "critical"
-            ):
-                temp_published_date = item["security_advisory"]["published_at"]
-                published_date_obj = datetime.strptime(
-                    temp_published_date, "%Y-%m-%dT%H:%M:%SZ"
-                )
+            if item["state"] == "open":
+                if item["security_advisory"]["severity"] == "critical":
 
-                crit_age = self.current_time - published_date_obj
-                if crit_age.days >= CRIT_MAX_SLO_DAYS:
-                    slo["crit_exceeded"] += 1
+                    temp_date = item["security_advisory"]["published_at"]
+                    published_date_obj = datetime.strptime(
+                        temp_date, "%Y-%m-%dT%H:%M:%SZ"
+                    )
 
-            if (
-                item["state"] == "open"
-                and item["security_advisory"]["severity"] == "high"
-            ):
-                temp_published_date = item["security_advisory"]["published_at"]
-                published_date_obj = datetime.strptime(
-                    temp_published_date, "%Y-%m-%dT%H:%M:%SZ"
-                )
+                    crit_age = current_time - published_date_obj
+                    if crit_age.days >= CRIT_MAX_SLO_DAYS:
+                        slo["Crit Exceeded"] += 1
 
-                high_age = self.current_time - published_date_obj
-                if high_age.days >= HIGH_MAX_SLO_DAYS:
-                    slo["high_exceeded"] += 1
+                if item["security_advisory"]["severity"] == "high":
 
-            if (
-                item["state"] == "open"
-                and item["security_advisory"]["severity"] == "medium"
-            ):
-                temp_published_date = item["security_advisory"]["published_at"]
-                published_date_obj = datetime.strptime(
-                    temp_published_date, "%Y-%m-%dT%H:%M:%SZ"
-                )
+                    temp_date = item["security_advisory"]["published_at"]
+                    published_date_obj = datetime.strptime(
+                        temp_date, "%Y-%m-%dT%H:%M:%SZ"
+                    )
 
-                medium_age = self.current_time - published_date_obj
-                if medium_age.days >= MED_MAX_SLO_DAYS:
-                    slo["med_exceeded"] += 1
+                    high_age = current_time - published_date_obj
+                    if high_age.days >= HIGH_MAX_SLO_DAYS:
+                        slo["High Exceeded"] += 1
 
-            if (
-                item["state"] == "open"
-                and item["security_advisory"]["severity"] == "low"
-            ):
-                temp_published_date = item["security_advisory"]["published_at"]
-                published_date_obj = datetime.strptime(
-                    temp_published_date, "%Y-%m-%dT%H:%M:%SZ"
-                )
+                if item["security_advisory"]["severity"] == "medium":
 
-                low_age = self.current_time - published_date_obj
-                if low_age.days >= LOW_MAX_SLO_DAYS:
-                    slo["low_exceeded"] += 1
+                    temp_date = item["security_advisory"]["published_at"]
+                    published_date_obj = datetime.strptime(
+                        temp_date, "%Y-%m-%dT%H:%M:%SZ"
+                    )
 
-        total_crit = self.parsed_data["Open Crit"]
-        total_high = self.parsed_data["Open High"]
-        total_med = self.parsed_data["Open Med"]
-        total_low = self.parsed_data["Open Low"]
+                    medium_age = current_time - published_date_obj
+                    if medium_age.days >= MED_MAX_SLO_DAYS:
+                        slo["Med Exceeded"] += 1
+
+                if item["security_advisory"]["severity"] == "low":
+
+                    temp_date = item["security_advisory"]["published_at"]
+                    published_date_obj = datetime.strptime(
+                        temp_date, "%Y-%m-%dT%H:%M:%SZ"
+                    )
+
+                    low_age = current_time - published_date_obj
+                    if low_age.days >= LOW_MAX_SLO_DAYS:
+                        slo["Low Exceeded"] += 1
 
         return slo
 
-    def get_state_data(self, repo_dict):
+    # def get_state_data(self, repo_dict):
+    def get_state_data(self):
 
         # template dictionary keys; allows reuse of nested parse_data function
         state_template = {
@@ -169,7 +163,7 @@ class Repo:
 
             return parsed_dict
 
-        for item in repo_dict:
+        for item in self.repo_dict:
             if item["state"] == "open":
                 state_open = parse_data(item, state_open)
 
