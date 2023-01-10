@@ -33,28 +33,40 @@ class Repo:
         self.parsed_data = {"Name": name}
         self.parsed_data.update(combined_data)
         self.current_time = datetime.now()
+        self.repo_dict = repo_dict
 
-    def get_critical_slo(self):
+    def get_slo(self):
 
-        MAX_SLO_DAYS = 15
-        date_list_critical = []
-        critical_slo_exceeded = []
+        CRIT_MAX_SLO_DAYS = 15
+        crit_slo_exceeded = 0
+        HIGH_MAX_SLO_DAYS = 30
+        high_slo_exceeded = 0
+        MED_MAX_SLO_DAYS = 60
+        med_slo_exceeded = 0
+        LOW_MAX_SLO_DAYS = 90
+        low_slo_exceeded = 0
 
-        for item in repo_dict:
-            if item["state"] == "open" and item["severity"] == "critical":
+        for item in self.repo_dict:
+            if (
+                item["state"] == "open"
+                and item["security_advisory"]["severity"] == "critical"
+            ):
+                temp_published_date = item["security_advisory"]["published_at"]
+                published_date_obj = datetime.strptime(
+                    temp_published_date, "%Y-%m-%dT%H:%M:%SZ"
+                )
 
-                # keep only first reported open alert date
-                temp_pub_at_date = item["security_advisory"]["published_at"]
-                print(f"temp_pub_at_date: {temp_fixed_at_date}")
+                age = self.current_time - published_date_obj
+                if age.days >= CRIT_MAX_SLO_DAYS:
+                    crit_slo_exceeded += 1
 
-                # slo_exceeded = temp_
+        total_crit = self.parsed_data["Open Crit"]
 
-                # date_list_critical.append(
-                # datetime.strptime(temp_pub_at_date, "%Y-%m-%dT%H:%M:%SZ")
-                # )
-                # state_open["Date"] = str(min(date_list_open))
+        print()
+        print(crit_slo_exceeded)
+        print(total_crit)
 
-        return temp_pub_at_date
+        return crit_slo_exceeded
 
     def get_state_data(self, repo_dict):
 
@@ -332,9 +344,7 @@ def main():
         # parsed_data.append(vars(input_file))
         parsed_data.append(input_file.parsed_data)
 
-        temp_critical_var = input_file.get_critical_slo()
-
-        print(type(temp_critical_var))
+        input_file.get_slo()
 
     # sort the data by priority number (sum of high and critical vulns)
     sorted_data = sorted(
