@@ -38,13 +38,16 @@ class Repo:
     def get_slo(self):
 
         CRIT_MAX_SLO_DAYS = 15
-        crit_slo_exceeded = 0
         HIGH_MAX_SLO_DAYS = 30
-        high_slo_exceeded = 0
         MED_MAX_SLO_DAYS = 60
-        med_slo_exceeded = 0
         LOW_MAX_SLO_DAYS = 90
-        low_slo_exceeded = 0
+
+        slo = {
+            "crit_exceeded": 0,
+            "high_exceeded": 0,
+            "med_exceeded": 0,
+            "low_exceeded": 0,
+        }
 
         for item in self.repo_dict:
             if (
@@ -56,17 +59,55 @@ class Repo:
                     temp_published_date, "%Y-%m-%dT%H:%M:%SZ"
                 )
 
-                age = self.current_time - published_date_obj
-                if age.days >= CRIT_MAX_SLO_DAYS:
-                    crit_slo_exceeded += 1
+                crit_age = self.current_time - published_date_obj
+                if crit_age.days >= CRIT_MAX_SLO_DAYS:
+                    slo["crit_exceeded"] += 1
+
+            if (
+                item["state"] == "open"
+                and item["security_advisory"]["severity"] == "high"
+            ):
+                temp_published_date = item["security_advisory"]["published_at"]
+                published_date_obj = datetime.strptime(
+                    temp_published_date, "%Y-%m-%dT%H:%M:%SZ"
+                )
+
+                high_age = self.current_time - published_date_obj
+                if high_age.days >= HIGH_MAX_SLO_DAYS:
+                    slo["high_exceeded"] += 1
+
+            if (
+                item["state"] == "open"
+                and item["security_advisory"]["severity"] == "medium"
+            ):
+                temp_published_date = item["security_advisory"]["published_at"]
+                published_date_obj = datetime.strptime(
+                    temp_published_date, "%Y-%m-%dT%H:%M:%SZ"
+                )
+
+                medium_age = self.current_time - published_date_obj
+                if medium_age.days >= MED_MAX_SLO_DAYS:
+                    slo["med_exceeded"] += 1
+
+            if (
+                item["state"] == "open"
+                and item["security_advisory"]["severity"] == "low"
+            ):
+                temp_published_date = item["security_advisory"]["published_at"]
+                published_date_obj = datetime.strptime(
+                    temp_published_date, "%Y-%m-%dT%H:%M:%SZ"
+                )
+
+                low_age = self.current_time - published_date_obj
+                if low_age.days >= LOW_MAX_SLO_DAYS:
+                    slo["low_exceeded"] += 1
 
         total_crit = self.parsed_data["Open Crit"]
+        total_high = self.parsed_data["Open High"]
+        total_med = self.parsed_data["Open Med"]
+        total_low = self.parsed_data["Open Low"]
 
-        print()
-        print(crit_slo_exceeded)
-        print(total_crit)
-
-        return crit_slo_exceeded
+        return slo
 
     def get_state_data(self, repo_dict):
 
@@ -344,7 +385,9 @@ def main():
         # parsed_data.append(vars(input_file))
         parsed_data.append(input_file.parsed_data)
 
-        input_file.get_slo()
+        all_slos = input_file.get_slo()
+
+        print(all_slos)
 
     # sort the data by priority number (sum of high and critical vulns)
     sorted_data = sorted(
