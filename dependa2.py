@@ -57,52 +57,43 @@ class Repo:
         for item in self.repo_dict:
             if item["state"] == "open":
                 if item["security_advisory"]["severity"] == "critical":
-
                     temp_date = item["security_advisory"]["published_at"]
-                    published_date_obj = datetime.strptime(
+                    temp_date_obj = datetime.strptime(
                         temp_date, "%Y-%m-%dT%H:%M:%SZ"
                     )
-
-                    crit_age = current_time - published_date_obj
+                    crit_age = current_time - temp_date_obj
                     if crit_age.days >= CRIT_MAX_SLO_DAYS:
                         slo["Crit Exceeded"] += 1
 
-                if item["security_advisory"]["severity"] == "high":
-
+                elif item["security_advisory"]["severity"] == "high":
                     temp_date = item["security_advisory"]["published_at"]
-                    published_date_obj = datetime.strptime(
+                    temp_date_obj = datetime.strptime(
                         temp_date, "%Y-%m-%dT%H:%M:%SZ"
                     )
-
-                    high_age = current_time - published_date_obj
+                    high_age = current_time - temp_date_obj
                     if high_age.days >= HIGH_MAX_SLO_DAYS:
                         slo["High Exceeded"] += 1
 
-                if item["security_advisory"]["severity"] == "medium":
-
+                elif item["security_advisory"]["severity"] == "medium":
                     temp_date = item["security_advisory"]["published_at"]
-                    published_date_obj = datetime.strptime(
+                    temp_date_obj = datetime.strptime(
                         temp_date, "%Y-%m-%dT%H:%M:%SZ"
                     )
-
-                    medium_age = current_time - published_date_obj
+                    medium_age = current_time - temp_date_obj
                     if medium_age.days >= MED_MAX_SLO_DAYS:
                         slo["Med Exceeded"] += 1
 
-                if item["security_advisory"]["severity"] == "low":
-
+                elif item["security_advisory"]["severity"] == "low":
                     temp_date = item["security_advisory"]["published_at"]
-                    published_date_obj = datetime.strptime(
+                    temp_date_obj = datetime.strptime(
                         temp_date, "%Y-%m-%dT%H:%M:%SZ"
                     )
-
-                    low_age = current_time - published_date_obj
+                    low_age = current_time - temp_date_obj
                     if low_age.days >= LOW_MAX_SLO_DAYS:
                         slo["Low Exceeded"] += 1
 
         return slo
 
-    # def get_state_data(self, repo_dict):
     def get_state_data(self):
 
         # template dictionary keys; allows reuse of nested parse_data function
