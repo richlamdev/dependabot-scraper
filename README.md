@@ -1,5 +1,4 @@
-## **This respository is no longer maintained**
-## **Visit this repository in lieu:**
+## **This respository is no longer maintained. Visit this repository in lieu:**
 ## **https://github.com/richlamdev/dependabot-slack**
 
 - [Dependabot Scraper](#dependabot-scraper)
