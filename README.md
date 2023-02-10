@@ -1,3 +1,7 @@
+## **This respository is no longer maintained**
+## **Visit this repository in lieu:**
+## **https://github.com/richlamdev/dependabot-slack**
+
 - [Dependabot Scraper](#dependabot-scraper)
   * [Introduction](#introduction)
   * [Prerequisites](#prerequisites)
